@@ -57,3 +57,26 @@ impl PathExt for std::path::Path {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use std::borrow::Cow;
+    use std::path::Path;
+    use crate::path::PathExt;
+
+    #[test]
+    fn basic() {
+        let wrong_ext = Path::new("myfile.txt");
+        let no_ext = Path::new("myfile");
+        let correct_ext = Path::new("myfile.bpx");
+        let wrong_ext_corrected = wrong_ext.ensure_extension("bpx");
+        let no_ext_corrected = no_ext.ensure_extension("bpx");
+        let correct_ext_corrected = correct_ext.ensure_extension("bpx");
+        if let Cow::Owned(_) = correct_ext_corrected {
+            panic!("If the extension is already correct no allocation should be performed")
+        }
+        assert_eq!(&wrong_ext_corrected, Path::new("myfile.bpx"));
+        assert_eq!(&no_ext_corrected, Path::new("myfile.bpx"));
+        assert_eq!(&correct_ext_corrected, Path::new("myfile.bpx"));
+    }
+}
