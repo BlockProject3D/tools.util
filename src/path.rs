@@ -26,15 +26,24 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+mod sealing {
+    pub trait Sealed {}
+    impl Sealed for std::path::Path {}
+}
+use sealing::Sealed;
+
 /// Extension trait for [Path](std::path::Path) for common functionality in BP3D software.
-pub trait PathExt {
+pub trait PathExt: Sealed {
     /// Ensures the given extension is present on a [Path](std::path::Path). Reallocates a new
     /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
     fn ensure_extension<S: AsRef<std::ffi::OsStr>>(&self, extension: S) -> std::borrow::Cow<std::path::Path>;
 }
 
 impl PathExt for std::path::Path {
-    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(&self, extension: S) -> std::borrow::Cow<std::path::Path> {
+    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(
+        &self,
+        extension: S,
+    ) -> std::borrow::Cow<std::path::Path> {
         if let Some(ext) = self.extension() {
             if ext == extension.as_ref() {
                 self.into()
