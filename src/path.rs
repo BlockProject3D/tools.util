@@ -26,17 +26,25 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "env")]
-pub mod env;
+/// Extension trait for [Path](std::path::Path) for common functionality in BP3D software.
+pub trait PathExt {
+    /// Ensures the given extension is present on a [Path](std::path::Path). Reallocates a new
+    /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
+    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(&self, extension: S) -> std::borrow::Cow<std::path::Path>;
+}
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
-
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
-
-#[cfg(feature = "path")]
-pub mod path;
-
-#[cfg(feature = "result")]
-pub mod result;
+impl PathExt for std::path::Path {
+    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(&self, extension: S) -> std::borrow::Cow<std::path::Path> {
+        if let Some(ext) = self.extension() {
+            if ext == extension.as_ref() {
+                self.into()
+            } else {
+                let mut buf = self.to_path_buf();
+                buf.set_extension(extension);
+                buf.into()
+            }
+        } else {
+            self.with_extension(extension).into()
+        }
+    }
+}

@@ -26,17 +26,20 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "env")]
-pub mod env;
+use std::error::Error;
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
+pub trait ResultExt<T> {
+    fn expect_exit(self, msg: &str, code: i32) -> T;
+}
 
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
-
-#[cfg(feature = "path")]
-pub mod path;
-
-#[cfg(feature = "result")]
-pub mod result;
+impl<T, E: Error> ResultExt<T> for Result<T, E> {
+    fn expect_exit(self, msg: &str, code: i32) -> T {
+        match self {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}: {}", msg, e);
+                std::process::exit(code);
+            }
+        }
+    }
+}

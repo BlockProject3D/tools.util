@@ -26,17 +26,49 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#[cfg(feature = "env")]
-pub mod env;
+//Because Rust macros are a peace of shit.
+#[macro_export]
+macro_rules! typed_ident {
+    ($t: ty, $name: ident) => { $name };
+}
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
+//Because Rust macros are a peace of shit.
+#[macro_export]
+macro_rules! hack_rust_buggy_macros {
+    ($name: ident, $ty: ident, $e: ident, $data: ty) => {
+        impl $e<$data> for $name {
+            fn from(value: $data) -> Self {
+                Self::$ty(value)
+            }
+        }
+    };
+    ($name: ident, $ty: ty, $($e: ident)?, $($data: ty)?) => {};
+}
 
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
+#[macro_export]
+macro_rules! simple_error {
+    (
+        $name: ident {
+            $($((impl $e: ident))? $ty: ident $(($data: ty))? => $desc: literal),*
+        }
+    ) => {
+        #[derive(Debug)]
+        pub enum $name {
+            $($ty $(($data))?),*
+        }
 
-#[cfg(feature = "path")]
-pub mod path;
+        $(
+            $crate::hack_rust_buggy_macros!($name, $ty, $($e)?, $($data)?);
+        )*
 
-#[cfg(feature = "result")]
-pub mod result;
+        impl Display for $name {
+            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+                match self {
+                    $($name::$ty $(($crate::typed_ident!($data, e)))? => write!(f, $desc $(, $crate::typed_ident!($data, e))?) ),*
+                }
+            }
+        }
+
+        impl std::error::Error for $name {}
+    };
+}
