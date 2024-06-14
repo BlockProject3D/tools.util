@@ -41,7 +41,10 @@ use sealing::Sealed;
 pub trait PathExt: Sealed {
     /// Ensures the given extension is present on a [Path](std::path::Path). Reallocates a new
     /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
-    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(&self, extension: S) -> std::borrow::Cow<std::path::Path>;
+    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(
+        &self,
+        extension: S,
+    ) -> std::borrow::Cow<std::path::Path>;
 }
 
 impl PathExt for std::path::Path {
@@ -65,9 +68,9 @@ impl PathExt for std::path::Path {
 
 #[cfg(test)]
 mod tests {
+    use crate::path::PathExt;
     use std::borrow::Cow;
     use std::path::Path;
-    use crate::path::PathExt;
 
     #[test]
     fn basic() {

@@ -30,8 +30,8 @@
 //!
 //! **See [RFC](https://www.rfc-editor.org/rfc/rfc8536.html)**
 
-use std::{fmt::Display, io::Read};
 use bytesutil::ReadBytes;
+use std::{fmt::Display, io::Read};
 
 /// A series of six-octet records specifying a local time type.
 /// The number of records is specified by the "typecnt" field in the header.
@@ -213,8 +213,7 @@ impl Data {
                     .as_slice()
                     .chunks(8)
                     .map(|v| LeapSecondRecord {
-                        occurrence: i32::read_bytes_be(&v[0..4])
-                            as i64,
+                        occurrence: i32::read_bytes_be(&v[0..4]) as i64,
                         correction: i32::read_bytes_be(&v[4..8]),
                     })
                     .collect(),

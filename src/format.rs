@@ -54,8 +54,12 @@ impl<W: std::fmt::Write> IoToFmt<W> {
 
 impl<W: std::fmt::Write> std::io::Write for IoToFmt<W> {
     fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
-        let str = std::str::from_utf8(buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
-        self.0.write_str(str).map(|_| str.len()).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+        let str = std::str::from_utf8(buf)
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        self.0
+            .write_str(str)
+            .map(|_| str.len())
+            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
     }
 
     fn flush(&mut self) -> std::io::Result<()> {
