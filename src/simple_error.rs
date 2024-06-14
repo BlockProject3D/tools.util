@@ -26,13 +26,17 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Error umbrella type generation macro.
+
 //Because Rust macros are a peace of shit.
+/// This macro is internal and called by another macro.
 #[macro_export]
 macro_rules! typed_ident {
     ($t: ty, $name: ident) => { $name };
 }
 
 //Because Rust macros are a peace of shit.
+/// This macro is internal and called by another macro.
 #[macro_export]
 macro_rules! hack_rust_buggy_macros {
     ($name: ident, $ty: ident, $e: ident, $data: ty) => {
@@ -45,24 +49,52 @@ macro_rules! hack_rust_buggy_macros {
     ($name: ident, $ty: ty, $($e: ident)?, $($data: ty)?) => {};
 }
 
+/// Generates a simple enum which maps multiple error types and implements [Error](Error) and
+/// [Display](Display) automatically. This optionally can generate [From](From) implementations
+/// on demand.
+///
+/// # Example
+///
+/// ```
+/// use bp3d_util::simple_error;
+/// simple_error!(
+///     /// Doc.
+///     TestError {
+///         /// This is a doc comment which is recorded by the macro.
+///         Untyped => "untyped variant",
+///         /// Another doc comment.
+///         (impl From) Io(std::io::Error) => "io error {}",
+///         Other(u8) => "other u8 error {}"
+///     }
+/// );
+/// println!("{}", TestError::Untyped);
+/// ```
 #[macro_export]
 macro_rules! simple_error {
     (
-        $name: ident {
-            $($((impl $e: ident))? $ty: ident $(($data: ty))? => $desc: literal),*
+        $(#[$meta: meta])*
+        $vis: vis $name: ident {
+            $(
+                $(#[$field_meta: meta])*
+                $((impl $e: ident))? $ty: ident $(($data: ty))? => $desc: literal
+            ),*
         }
     ) => {
+        $(#[$meta])*
         #[derive(Debug)]
-        pub enum $name {
-            $($ty $(($data))?),*
+        $vis enum $name {
+            $(
+                $(#[$field_meta])*
+                $ty $(($data))?
+            ),*
         }
 
         $(
             $crate::hack_rust_buggy_macros!($name, $ty, $($e)?, $($data)?);
         )*
 
-        impl Display for $name {
-            fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        impl std::fmt::Display for $name {
+            fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 match self {
                     $($name::$ty $(($crate::typed_ident!($data, e)))? => write!(f, $desc $(, $crate::typed_ident!($data, e))?) ),*
                 }

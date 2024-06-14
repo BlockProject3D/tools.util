@@ -26,9 +26,21 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Result utilities.
+
 use std::error::Error;
 
+/// Result extensions designed to simplify console based tools.
 pub trait ResultExt<T> {
+    /// Expects a given result to unwrap without issues, in case the result is an error,
+    /// this function exits the program.
+    ///
+    /// # Arguments
+    ///
+    /// * `msg`: a failure context message.
+    /// * `code`: the exit code to exit the program with in case of error.
+    ///
+    /// returns: T the value if no errors have occurred.
     fn expect_exit(self, msg: &str, code: i32) -> T;
 }
 

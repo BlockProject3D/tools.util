@@ -26,6 +26,11 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+//! Path based utilities.
+//!
+//! This used to be in bp3d-os::fs but was moved here as it does not depend on any platform
+//! specific function.
+
 mod sealing {
     pub trait Sealed {}
     impl Sealed for std::path::Path {}

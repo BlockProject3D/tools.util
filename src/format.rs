@@ -26,25 +26,39 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![warn(missing_docs)]
+//! Formatting utilities.
 
-//! Generic utilities not tied to any particular platform for use with other BP3D software.
+/// An io [Write](std::io::Write) to fmt [Write](std::fmt::Write).
+///
+/// This may look like a hack but is a requirement for pathological APIs such as presented by the
+/// time crate.
+pub struct IoToFmt<W: std::fmt::Write>(W);
 
-#[cfg(feature = "env")]
-pub mod env;
+impl<W: std::fmt::Write> IoToFmt<W> {
+    /// Create a new [IoToFmt](IoToFmt) wrapper.
+    ///
+    /// # Arguments
+    ///
+    /// * `w`: target fmt [Write](std::fmt::Write) to write into.
+    ///
+    /// returns: IoToFmt<W>
+    pub fn new(w: W) -> Self {
+        Self(w)
+    }
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
+    /// Extracts the underlying [Write](std::fmt::Write).
+    pub fn into_inner(self) -> W {
+        self.0
+    }
+}
 
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
+impl<W: std::fmt::Write> std::io::Write for IoToFmt<W> {
+    fn write(&mut self, buf: &[u8]) -> std::io::Result<usize> {
+        let str = std::str::from_utf8(buf).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        self.0.write_str(str).map(|_| str.len()).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))
+    }
 
-#[cfg(feature = "path")]
-pub mod path;
-
-#[cfg(feature = "result")]
-pub mod result;
-
-#[cfg(feature = "format")]
-pub mod format;
+    fn flush(&mut self) -> std::io::Result<()> {
+        Ok(())
+    }
+}

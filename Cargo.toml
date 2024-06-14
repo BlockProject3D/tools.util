@@ -18,6 +18,7 @@ bytesutil = { version = "0.7.0", optional = true }
 [features]
 env = []
 tzif = ["bytesutil"]
+format = []
 simple-error = []
 result = []
 path = []
