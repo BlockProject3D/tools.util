@@ -1,6 +1,6 @@
 [package]
 name = "bp3d-util"
-version = "1.0.0-rc.1.0.0"
+version = "1.0.0-rc.1.0.1"
 authors = ["Yuri Edward <yuri6037@outlook.com>"]
 edition = "2021"
 description = "A library template."
@@ -22,3 +22,7 @@ format = []
 simple-error = []
 result = []
 path = []
+
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]
