@@ -32,7 +32,9 @@
 /// This macro is internal and called by another macro.
 #[macro_export]
 macro_rules! typed_ident {
-    ($t: ty, $name: ident) => { $name };
+    ($t: ty, $name: ident) => {
+        $name
+    };
 }
 
 //Because Rust macros are a peace of shit.
