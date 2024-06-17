@@ -28,6 +28,81 @@
 
 //! Formatting utilities.
 
+use std::mem::MaybeUninit;
+
+/// Fixed length string buffer.
+#[derive(Clone, Debug)]
+pub struct FixedBufStr<const N: usize> {
+    len: usize,
+    buffer: [MaybeUninit<u8>; N],
+}
+
+impl<const N: usize> FixedBufStr<N> {
+    /// Creates a new fixed length string buffer.
+    pub fn new() -> FixedBufStr<N> {
+        FixedBufStr {
+            buffer: unsafe { MaybeUninit::uninit().assume_init() },
+            len: 0,
+        }
+    }
+
+    /// Extracts the string from this buffer.
+    pub fn str(&self) -> &str {
+        unsafe { std::str::from_utf8_unchecked(std::mem::transmute(&self.buffer[..self.len as _])) }
+    }
+
+    /// Constructs this buffer from an existing string.
+    pub fn from_str(value: &str) -> Self {
+        let mut buffer = FixedBufStr::new();
+        let len = std::cmp::min(value.len(), N);
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                value.as_ptr(),
+                std::mem::transmute(buffer.buffer.as_mut_ptr()),
+                len,
+            );
+        }
+        buffer.len = len as _;
+        buffer
+    }
+
+    /// Appends a raw byte buffer at the end of this string buffer.
+    ///
+    /// Returns the number of bytes written.
+    ///
+    /// # Arguments
+    ///
+    /// * `buf`: the raw byte buffer to append.
+    ///
+    /// returns: usize
+    ///
+    /// # Safety
+    ///
+    /// * [FixedBufStr](FixedBufStr) contains only valid UTF-8 strings so buf must contain only valid UTF-8
+    /// bytes.
+    /// * If buf contains invalid UTF-8 bytes, further operations on the log message buffer may
+    /// result in UB.
+    pub unsafe fn write(&mut self, buf: &[u8]) -> usize {
+        let len = std::cmp::min(buf.len(), N - self.len);
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                buf.as_ptr(),
+                std::mem::transmute(self.buffer.as_mut_ptr().offset(self.len as _)),
+                len,
+            );
+        }
+        self.len += len;
+        len
+    }
+}
+
+impl<const N: usize> std::fmt::Write for FixedBufStr<N> {
+    fn write_str(&mut self, value: &str) -> std::fmt::Result {
+        unsafe { self.write(value.as_bytes()) };
+        Ok(())
+    }
+}
+
 /// An io [Write](std::io::Write) to fmt [Write](std::fmt::Write).
 ///
 /// This may look like a hack but is a requirement for pathological APIs such as presented by the
