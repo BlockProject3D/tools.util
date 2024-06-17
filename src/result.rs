@@ -26,25 +26,32 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![warn(missing_docs)]
+//! Result utilities.
 
-//! Generic utilities not tied to any particular platform for use with other BP3D software.
+use std::error::Error;
 
-#[cfg(feature = "env")]
-pub mod env;
+/// Result extensions designed to simplify console based tools.
+pub trait ResultExt<T> {
+    /// Expects a given result to unwrap without issues, in case the result is an error,
+    /// this function exits the program.
+    ///
+    /// # Arguments
+    ///
+    /// * `msg`: a failure context message.
+    /// * `code`: the exit code to exit the program with in case of error.
+    ///
+    /// returns: T the value if no errors have occurred.
+    fn expect_exit(self, msg: &str, code: i32) -> T;
+}
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
-
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
-
-#[cfg(feature = "path")]
-pub mod path;
-
-#[cfg(feature = "result")]
-pub mod result;
-
-#[cfg(feature = "format")]
-pub mod format;
+impl<T, E: Error> ResultExt<T> for Result<T, E> {
+    fn expect_exit(self, msg: &str, code: i32) -> T {
+        match self {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}: {}", msg, e);
+                std::process::exit(code);
+            }
+        }
+    }
+}

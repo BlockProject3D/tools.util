@@ -1,6 +1,9 @@
 # Binary directory
 target
 
+# Avoid conflicts in Git
+Cargo.lock
+
 # Temporary CI file
 versionfile.txt
 

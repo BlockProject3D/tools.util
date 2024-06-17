@@ -1,11 +1,11 @@
 [package]
-name = "test"
-version = "0.0.1"
+name = "bp3d-util"
+version = "1.0.0"
 authors = ["Yuri Edward <yuri6037@outlook.com>"]
 edition = "2021"
 description = "A library template."
 license = "BSD-3-Clause"
-repository = "https://github.com/BlockProject3D/template.rust-lib"
+repository = "https://github.com/BlockProject3D/tools.util"
 readme = "./README.MD"
 keywords = []
 categories = []
@@ -13,7 +13,16 @@ categories = []
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-
+bytesutil = { version = "0.7.0", optional = true }
 
 [features]
+env = []
+tzif = ["bytesutil"]
+format = []
+simple-error = []
+result = []
+path = []
 
+[package.metadata.docs.rs]
+all-features = true
+rustdoc-args = ["--cfg", "docsrs"]

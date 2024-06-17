@@ -26,25 +26,31 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-#![cfg_attr(docsrs, feature(doc_auto_cfg))]
-#![warn(missing_docs)]
+//! This module contains tools to simplify parsing environment variables.
 
-//! Generic utilities not tied to any particular platform for use with other BP3D software.
+use std::ffi::{OsStr, OsString};
 
-#[cfg(feature = "env")]
-pub mod env;
+/// Gets the content of an environment variable.
+///
+/// Returns None if the variable does not exist.
+pub fn get_os<T: AsRef<OsStr>>(name: T) -> Option<OsString> {
+    std::env::var_os(name)
+}
 
-#[cfg(feature = "tzif")]
-pub mod tzif;
+/// Gets the content of an environment variable.
+///
+/// Returns None if the variable does not exist or is not valid UTF-8.
+pub fn get<T: AsRef<OsStr>>(name: T) -> Option<String> {
+    get_os(name).and_then(|v| v.into_string().ok())
+}
 
-#[cfg(feature = "simple-error")]
-pub mod simple_error;
-
-#[cfg(feature = "path")]
-pub mod path;
-
-#[cfg(feature = "result")]
-pub mod result;
-
-#[cfg(feature = "format")]
-pub mod format;
+/// Gets a boolean environment variable.
+///
+/// Returns None if the variable does not exist or the format is unrecognized.
+pub fn get_bool<T: AsRef<OsStr>>(name: T) -> Option<bool> {
+    match &*get(name)? {
+        "off" | "OFF" | "FALSE" | "false" | "0" => Some(false),
+        "on" | "ON" | "TRUE" | "true" | "1" => Some(true),
+        _ => None,
+    }
+}
