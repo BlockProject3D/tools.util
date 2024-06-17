@@ -225,7 +225,7 @@ impl Data {
                 transition_times: transition_times
                     .as_slice()
                     .chunks(8)
-                    .map(|v| i64::read_bytes_be(v))
+                    .map(i64::read_bytes_be)
                     .collect(),
                 leap_second_records: leap_second_records
                     .as_slice()
