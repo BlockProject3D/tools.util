@@ -37,6 +37,12 @@ pub struct FixedBufStr<const N: usize> {
     buffer: [MaybeUninit<u8>; N],
 }
 
+impl<const N: usize> Default for FixedBufStr<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<const N: usize> FixedBufStr<N> {
     /// Creates a new fixed length string buffer.
     pub fn new() -> FixedBufStr<N> {
@@ -87,7 +93,7 @@ impl<const N: usize> FixedBufStr<N> {
         unsafe {
             std::ptr::copy_nonoverlapping(
                 buf.as_ptr(),
-                std::mem::transmute(self.buffer.as_mut_ptr().offset(self.len as _)),
+                std::mem::transmute(self.buffer.as_mut_ptr().add(self.len)),
                 len,
             );
         }
