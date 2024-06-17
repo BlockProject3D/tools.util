@@ -53,11 +53,17 @@ impl<const N: usize> FixedBufStr<N> {
     }
 
     /// Extracts the string from this buffer.
+    //type inference works so why should the code look awfully more complex?
+    #[allow(clippy::missing_transmute_annotations)]
     pub fn str(&self) -> &str {
         unsafe { std::str::from_utf8_unchecked(std::mem::transmute(&self.buffer[..self.len as _])) }
     }
 
     /// Constructs this buffer from an existing string.
+    //type inference works so why should the code look awfully more complex?
+    #[allow(clippy::missing_transmute_annotations)]
+    //I believe this is a false-positive, FromStr returns a Result not Self.
+    #[allow(clippy::should_implement_trait)]
     pub fn from_str(value: &str) -> Self {
         let mut buffer = FixedBufStr::new();
         let len = std::cmp::min(value.len(), N);
@@ -88,6 +94,8 @@ impl<const N: usize> FixedBufStr<N> {
     /// bytes.
     /// * If buf contains invalid UTF-8 bytes, further operations on the log message buffer may
     /// result in UB.
+    //type inference works so why should the code look awfully more complex?
+    #[allow(clippy::missing_transmute_annotations)]
     pub unsafe fn write(&mut self, buf: &[u8]) -> usize {
         let len = std::cmp::min(buf.len(), N - self.len);
         unsafe {
