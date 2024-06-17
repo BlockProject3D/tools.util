@@ -141,3 +141,19 @@ impl<W: std::fmt::Write> std::io::Write for IoToFmt<W> {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::format::FixedBufStr;
+    use std::fmt::Write;
+
+    #[test]
+    fn basic() {
+        let mut msg: FixedBufStr<64> = FixedBufStr::new();
+        let _ = write!(msg, "this");
+        let _ = write!(msg, " is");
+        let _ = write!(msg, " a");
+        let _ = write!(msg, " test");
+        assert_eq!(msg.str(), "this is a test");
+    }
+}
