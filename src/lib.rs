@@ -48,3 +48,6 @@ pub mod result;
 
 #[cfg(feature = "format")]
 pub mod format;
+
+#[cfg(feature = "extension")]
+pub mod extension;

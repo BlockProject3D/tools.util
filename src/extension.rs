@@ -26,35 +26,25 @@
 // NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 // SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-//! Result utilities.
+//! Helper macro for writing extensions to any foreign type using sealed traits.
 
-use crate::extension;
-use std::error::Error;
-
-extension! {
-    /// Result extensions designed to simplify console based tools.
-    pub extension ResultExt<T>: Result<T, E> {
-        /// Expects a given result to unwrap without issues, in case the result is an error,
-        /// this function exits the program.
-        ///
-        /// # Arguments
-        ///
-        /// * `msg`: a failure context message.
-        /// * `code`: the exit code to exit the program with in case of error.
-        ///
-        /// returns: T the value if no errors have occurred.
-        fn expect_exit(self, msg: &str, code: i32) -> T;
-    }
-}
-
-impl<T, E: Error> ResultExt<T> for Result<T, E> {
-    fn expect_exit(self, msg: &str, code: i32) -> T {
-        match self {
-            Ok(v) => v,
-            Err(e) => {
-                eprintln!("{}: {}", msg, e);
-                std::process::exit(code);
-            }
+/// Generate a sealed trait with a given name and content.
+#[macro_export]
+macro_rules! extension {
+    (
+        $(#[$meta: meta])*
+        pub extension $name: ident $(<$($generic: ident),*>)?: $ty: ident$(<$($generic1: ident),*>)? {
+            $($tokens: tt)*
         }
-    }
+    ) => {
+        mod sealing {
+            pub trait Sealed {}
+        }
+        impl$(<$($generic1),*>)? sealing::Sealed for $ty $(<$($generic1),*>)? {}
+
+        $(#[$meta])*
+        pub trait $name $(<$($generic),*>)? : sealing::Sealed {
+            $($tokens)*
+        }
+    };
 }
