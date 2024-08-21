@@ -28,8 +28,8 @@
 
 //! Result utilities.
 
-use std::error::Error;
 use crate::extension;
+use std::error::Error;
 
 extension! {
     /// Result extensions designed to simplify console based tools.

@@ -31,9 +31,9 @@
 //! This used to be in bp3d-os::fs but was moved here as it does not depend on any platform
 //! specific function.
 
+use crate::extension;
 use std::borrow::Cow;
 use std::ffi::OsStr;
-use crate::extension;
 use std::path::Path;
 
 extension! {
