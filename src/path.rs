@@ -31,27 +31,22 @@
 //! This used to be in bp3d-os::fs but was moved here as it does not depend on any platform
 //! specific function.
 
-mod sealing {
-    pub trait Sealed {}
-    impl Sealed for std::path::Path {}
-}
-use sealing::Sealed;
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use crate::extension;
+use std::path::Path;
 
-/// Extension trait for [Path](std::path::Path) for common functionality in BP3D software.
-pub trait PathExt: Sealed {
-    /// Ensures the given extension is present on a [Path](std::path::Path). Reallocates a new
-    /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
-    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(
-        &self,
-        extension: S,
-    ) -> std::borrow::Cow<std::path::Path>;
+extension! {
+    /// Extension trait for [Path](Path) for common functionality in BP3D software.
+    pub extension PathExt: Path {
+        /// Ensures the given extension is present on a [Path](Path). Reallocates a new
+        /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
+        fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<Path>;
+    }
 }
 
-impl PathExt for std::path::Path {
-    fn ensure_extension<S: AsRef<std::ffi::OsStr>>(
-        &self,
-        extension: S,
-    ) -> std::borrow::Cow<std::path::Path> {
+impl PathExt for Path {
+    fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<Path> {
         if let Some(ext) = self.extension() {
             if ext == extension.as_ref() {
                 self.into()
