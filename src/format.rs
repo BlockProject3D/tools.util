@@ -91,9 +91,9 @@ impl<const N: usize> FixedBufStr<N> {
     /// # Safety
     ///
     /// * [FixedBufStr](FixedBufStr) contains only valid UTF-8 strings so buf must contain only valid UTF-8
-    /// bytes.
+    ///   bytes.
     /// * If buf contains invalid UTF-8 bytes, further operations on the log message buffer may
-    /// result in UB.
+    ///   result in UB.
     //type inference works so why should the code look awfully more complex?
     #[allow(clippy::missing_transmute_annotations)]
     pub unsafe fn write(&mut self, buf: &[u8]) -> usize {
