@@ -1,6 +1,6 @@
 [package]
 name = "bp3d-util"
-version = "1.1.0"
+version = "1.2.0"
 authors = ["Yuri Edward <yuri6037@outlook.com>"]
 edition = "2021"
 description = "A library template."
@@ -23,6 +23,7 @@ simple-error = []
 result = ["extension"]
 path = ["extension"]
 extension = []
+index-map = []
 
 [package.metadata.docs.rs]
 all-features = true
