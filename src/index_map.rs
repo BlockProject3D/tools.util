@@ -47,7 +47,7 @@ impl<T: Index> Index for Rc<T> {
     type Key = T::Key;
 
     fn index(&self) -> &Self::Key {
-        (&**self).index()
+        (**self).index()
     }
 }
 
@@ -55,7 +55,7 @@ impl<T: Index> Index for Arc<T> {
     type Key = T::Key;
 
     fn index(&self) -> &Self::Key {
-        (&**self).index()
+        (**self).index()
     }
 }
 
