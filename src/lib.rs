@@ -51,3 +51,6 @@ pub mod format;
 
 #[cfg(feature = "extension")]
 pub mod extension;
+
+#[cfg(feature = "index-map")]
+pub mod index_map;

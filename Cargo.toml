@@ -23,6 +23,7 @@ simple-error = []
 result = ["extension"]
 path = ["extension"]
 extension = []
+index-map = []
 
 [package.metadata.docs.rs]
 all-features = true
