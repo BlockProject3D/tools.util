@@ -76,13 +76,13 @@ impl<V: Index> PartialEq for Item<V> {
 
 impl<V: Index> Eq for Item<V> {}
 
-impl<V: Index<Key=str>> Borrow<str> for Item<V> {
+impl<V: Index<Key = str>> Borrow<str> for Item<V> {
     fn borrow(&self) -> &V::Key {
         self.0.index()
     }
 }
 
-impl<V: Index<Key=usize>> Borrow<usize> for Item<V> {
+impl<V: Index<Key = usize>> Borrow<usize> for Item<V> {
     fn borrow(&self) -> &V::Key {
         self.0.index()
     }
@@ -134,12 +134,18 @@ impl<V: Index> IndexMap<V> {
     ///
     /// returns: Option<&V>
     #[allow(private_bounds)] // Because Rust is a piece of shit!!
-    pub fn get(&self, key: &V::Key) -> Option<&V> where Item<V>: Borrow<V::Key> {
+    pub fn get(&self, key: &V::Key) -> Option<&V>
+    where
+        Item<V>: Borrow<V::Key>,
+    {
         self.0.get(key).map(|v| &v.0)
     }
 }
 
-impl<'a, V: Index> std::ops::Index<&'a V::Key> for IndexMap<V> where Item<V>: Borrow<V::Key> {
+impl<'a, V: Index> std::ops::Index<&'a V::Key> for IndexMap<V>
+where
+    Item<V>: Borrow<V::Key>,
+{
     type Output = V;
 
     fn index(&self, index: &'a V::Key) -> &Self::Output {
