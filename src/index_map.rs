@@ -114,7 +114,7 @@ impl<V> IndexMap<V> {
     }
 
     /// Returns an iterator over all elements contained in the map.
-    pub fn iter(&self) -> impl Iterator<Item=&V> {
+    pub fn iter(&self) -> impl Iterator<Item = &V> {
         self.0.iter().map(|v| &v.0)
     }
 }
