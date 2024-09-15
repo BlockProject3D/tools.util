@@ -112,10 +112,15 @@ impl<V> IndexMap<V> {
     pub fn with_capacity(capacity: usize) -> IndexMap<V> {
         Self(HashSet::with_capacity(capacity))
     }
+
+    /// Returns an iterator over all elements contained in the map.
+    pub fn iter(&self) -> impl Iterator<Item=&V> {
+        self.0.iter().map(|v| &v.0)
+    }
 }
 
 impl<V: Index> IndexMap<V> {
-    /// Inserts a new item in this [IndexMap]
+    /// Inserts a new item in this [IndexMap].
     ///
     /// # Arguments
     ///
