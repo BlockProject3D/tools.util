@@ -102,6 +102,16 @@ impl<V> IndexMap<V> {
         IndexMap(HashSet::new())
     }
 
+    /// Returns the number of items in this [IndexMap].
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Returns true when this [IndexMap] is empty.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Creates a new instance of an [IndexMap] with a given capacity.
     ///
     /// # Arguments
