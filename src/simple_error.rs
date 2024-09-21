@@ -51,8 +51,8 @@ macro_rules! hack_rust_buggy_macros {
     ($name: ident, $ty: ty, $($e: ident)?, $($data: ty)?) => {};
 }
 
-/// Generates a simple enum which maps multiple error types and implements [Error](Error) and
-/// [Display](Display) automatically. This optionally can generate [From](From) implementations
+/// Generates a simple enum which maps multiple error types and implements [Error](std::error::Error) and
+/// [Display](std::fmt::Display) automatically. This optionally can generate [From](From) implementations
 /// on demand.
 ///
 /// # Example

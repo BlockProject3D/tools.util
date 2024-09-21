@@ -102,13 +102,21 @@ impl<V> IndexMap<V> {
         IndexMap(HashSet::new())
     }
 
+    /// Returns the number of items in this [IndexMap].
+    pub fn len(&self) -> usize {
+        self.0.len()
+    }
+
+    /// Returns true when this [IndexMap] is empty.
+    pub fn is_empty(&self) -> bool {
+        self.0.is_empty()
+    }
+
     /// Creates a new instance of an [IndexMap] with a given capacity.
     ///
     /// # Arguments
     ///
     /// * `capacity`: the capacity of the new [IndexMap].
-    ///
-    /// returns: IndexedMap<V>
     pub fn with_capacity(capacity: usize) -> IndexMap<V> {
         Self(HashSet::with_capacity(capacity))
     }
@@ -136,8 +144,6 @@ impl<V: Index> IndexMap<V> {
     /// # Arguments
     ///
     /// * `key`: the key of the element to look for.
-    ///
-    /// returns: Option<&V>
     #[allow(private_bounds)] // Because Rust is a piece of shit!!
     pub fn get(&self, key: &V::Key) -> Option<&V>
     where
