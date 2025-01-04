@@ -1,13 +1,13 @@
 [package]
 name = "bp3d-util"
-version = "1.4.0"
+version = "1.4.1"
 authors = ["Yuri Edward <yuri6037@outlook.com>"]
 edition = "2021"
-description = "A library template."
+description = "OS independant Rust language utilities."
 license = "BSD-3-Clause"
 repository = "https://github.com/BlockProject3D/tools.util"
 readme = "./README.MD"
-keywords = []
+keywords = ["bp3d", "rust", "utilities"]
 categories = []
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
