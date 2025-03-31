@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -43,6 +43,39 @@ impl<const N: usize> Default for FixedBufStr<N> {
     }
 }
 
+// This function is full of unsafe because it ran slower than expected.
+// It appears that even a single subtraction has a HUGE impact on performance in Rust.
+// It also appears that having this as a function instead of being inlined multiplies by 2 running
+// time.
+// Unfortunately that thing is in a hot path within debug.tracing.
+#[inline(always)]
+fn utf8_max(buf: &[u8], max: usize) -> usize {
+    let buf_len = buf.len();
+    if buf_len <= max {
+        buf_len
+    } else if max == 0 {
+        0
+    } else if unsafe { buf.get_unchecked(max.unchecked_sub(1)) } & 0x80 == 0x00 {
+        max
+    } else {
+        let start = unsafe { max.unchecked_sub(1) };
+        let mut i = start;
+        unsafe {
+            while buf.get_unchecked(i) & 0xC0 == 0x80 {
+                i = i.unchecked_sub(1);
+            }
+            let n = start.unchecked_sub(i);
+            if (buf.get_unchecked(i) & 0xF0 == 0xF0 && n == 4) ||
+                (buf.get_unchecked(i) & 0xE0 == 0xE0 && n == 3) ||
+                (buf.get_unchecked(i) & 0xC0 == 0xC0 && n == 2) {
+                max
+            } else {
+                i
+            }
+        }
+    }
+}
+
 impl<const N: usize> FixedBufStr<N> {
     /// Creates a new fixed length string buffer.
     pub fn new() -> FixedBufStr<N> {
@@ -66,7 +99,7 @@ impl<const N: usize> FixedBufStr<N> {
     #[allow(clippy::should_implement_trait)]
     pub fn from_str(value: &str) -> Self {
         let mut buffer = FixedBufStr::new();
-        let len = std::cmp::min(value.len(), N);
+        let len = utf8_max(value.as_bytes(), N);
         unsafe {
             std::ptr::copy_nonoverlapping(
                 value.as_ptr(),
@@ -97,7 +130,7 @@ impl<const N: usize> FixedBufStr<N> {
     //type inference works so why should the code look awfully more complex?
     #[allow(clippy::missing_transmute_annotations)]
     pub unsafe fn write(&mut self, buf: &[u8]) -> usize {
-        let len = std::cmp::min(buf.len(), N - self.len);
+        let len = utf8_max(buf, N - self.len);
         unsafe {
             std::ptr::copy_nonoverlapping(
                 buf.as_ptr(),
@@ -169,5 +202,48 @@ mod tests {
         let _ = write!(msg, " a");
         let _ = write!(msg, " test");
         assert_eq!(msg.str(), "this is a test");
+    }
+
+    #[test]
+    fn truncate_ascii() {
+        let mut msg: FixedBufStr<4> = FixedBufStr::new();
+        let _ = write!(msg, "this");
+        let _ = write!(msg, " is");
+        let _ = write!(msg, " a");
+        let _ = write!(msg, " test");
+        assert_eq!(msg.str().len(), 4);
+        assert_eq!(msg.str(), "this");
+    }
+
+    #[test]
+    fn truncate_utf8_exact() {
+        let mut msg: FixedBufStr<3> = FixedBufStr::new();
+        let _ = write!(msg, "我");
+        assert_eq!(msg.str().len(), 3);
+        assert_eq!(msg.str(), "我");
+    }
+
+    #[test]
+    fn truncate_utf8_exact2() {
+        let mut msg: FixedBufStr<6> = FixedBufStr::new();
+        let _ = write!(msg, "我是");
+        assert_eq!(msg.str().len(), 6);
+        assert_eq!(msg.str(), "我是");
+    }
+
+    #[test]
+    fn truncate_utf8_exact3() {
+        let mut msg: FixedBufStr<6> = FixedBufStr::new();
+        let _ = write!(msg, "我abcd");
+        assert_eq!(msg.str().len(), 6);
+        assert_eq!(msg.str(), "我abc");
+    }
+
+    #[test]
+    fn truncate_utf8() {
+        let mut msg: FixedBufStr<4> = FixedBufStr::new();
+        let _ = write!(msg, "我是");
+        assert_eq!(msg.str().len(), 3);
+        assert_eq!(msg.str(), "我");
     }
 }
