@@ -65,9 +65,10 @@ fn utf8_max(buf: &[u8], max: usize) -> usize {
                 i = i.unchecked_sub(1);
             }
             let n = start.unchecked_sub(i);
-            if (buf.get_unchecked(i) & 0xF0 == 0xF0 && n == 4) ||
-                (buf.get_unchecked(i) & 0xE0 == 0xE0 && n == 3) ||
-                (buf.get_unchecked(i) & 0xC0 == 0xC0 && n == 2) {
+            if (buf.get_unchecked(i) & 0xF0 == 0xF0 && n == 4)
+                || (buf.get_unchecked(i) & 0xE0 == 0xE0 && n == 3)
+                || (buf.get_unchecked(i) & 0xC0 == 0xC0 && n == 2)
+            {
                 max
             } else {
                 i
