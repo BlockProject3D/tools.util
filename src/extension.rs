@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -32,19 +32,23 @@
 #[macro_export]
 macro_rules! extension {
     (
-        $(#[$meta: meta])*
-        pub extension $name: ident $(<$($generic: ident),*>)?: $ty: ident$(<$($generic1: ident),*>)? {
-            $($tokens: tt)*
-        }
+        $(
+            $(#[$meta: meta])*
+            pub extension $name: ident $(<$($generic: ident),*>)?: $ty: ty {
+                $($tokens: tt)*
+            }
+        )*
     ) => {
         mod sealing {
             pub trait Sealed {}
         }
-        impl$(<$($generic1),*>)? sealing::Sealed for $ty $(<$($generic1),*>)? {}
+        $(
+            impl$(<$($generic),*>)? sealing::Sealed for $ty {}
 
-        $(#[$meta])*
-        pub trait $name $(<$($generic),*>)? : sealing::Sealed {
-            $($tokens)*
-        }
+            $(#[$meta])*
+            pub trait $name $(<$($generic),*>)? : sealing::Sealed {
+                $($tokens)*
+            }
+        )*
     };
 }
