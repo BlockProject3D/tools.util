@@ -28,8 +28,8 @@
 
 //! String utilities.
 
-use std::borrow::Cow;
 use crate::extension;
+use std::borrow::Cow;
 
 /// The range trait that represents all supported range types for sub_nearest method.
 pub trait Range {
@@ -80,9 +80,10 @@ fn utf8_max(buf: &[u8], max: usize) -> &[u8] {
                 i = i.unchecked_sub(1);
             }
             let n = start.unchecked_sub(i);
-            if (buf.get_unchecked(i) & 0xF0 == 0xF0 && n == 4) ||
-                (buf.get_unchecked(i) & 0xE0 == 0xE0 && n == 3) ||
-                (buf.get_unchecked(i) & 0xC0 == 0xC0 && n == 2) {
+            if (buf.get_unchecked(i) & 0xF0 == 0xF0 && n == 4)
+                || (buf.get_unchecked(i) & 0xE0 == 0xE0 && n == 3)
+                || (buf.get_unchecked(i) & 0xC0 == 0xC0 && n == 2)
+            {
                 &buf[..max]
             } else {
                 &buf[..i]
@@ -194,8 +195,8 @@ impl BufTools for [u8] {
 
 #[cfg(test)]
 mod tests {
-    use std::borrow::Cow;
     use crate::string::{BufTools, StrTools};
+    use std::borrow::Cow;
 
     #[test]
     fn sub_basic() {
@@ -256,7 +257,10 @@ mod tests {
         let msg1 = "Abc";
         assert_eq!(&*msg.as_bytes().capitalise_ascii(), b"Abc");
         assert_eq!(&*msg1.as_bytes().capitalise_ascii(), b"Abc");
-        assert!(matches!(msg1.as_bytes().capitalise_ascii(), Cow::Borrowed(_)));
+        assert!(matches!(
+            msg1.as_bytes().capitalise_ascii(),
+            Cow::Borrowed(_)
+        ));
         assert_eq!(&*msg1.as_bytes().decapitalise_ascii(), b"abc");
     }
 }
