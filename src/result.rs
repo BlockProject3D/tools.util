@@ -1,4 +1,4 @@
-// Copyright (c) 2024, BlockProject 3D
+// Copyright (c) 2025, BlockProject 3D
 //
 // All rights reserved.
 //
@@ -33,7 +33,7 @@ use std::error::Error;
 
 extension! {
     /// Result extensions designed to simplify console based tools.
-    pub extension ResultExt<T>: Result<T, E> {
+    pub extension ResultExt<T, E>: Result<T, E> {
         /// Expects a given result to unwrap without issues, in case the result is an error,
         /// this function exits the program.
         ///
@@ -47,7 +47,7 @@ extension! {
     }
 }
 
-impl<T, E: Error> ResultExt<T> for Result<T, E> {
+impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
     fn expect_exit(self, msg: &str, code: i32) -> T {
         match self {
             Ok(v) => v,
