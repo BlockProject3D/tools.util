@@ -58,3 +58,21 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
         }
     }
 }
+
+macro_rules! try_res {
+    ($value: expr => |$e: ident| $err: expr) => {
+        match $value {
+            Ok(v) => v,
+            Err($e) => return Err($err),
+        }
+    };
+}
+
+macro_rules! try_opt {
+    ($value: expr => $err: expr) => {
+        match $value {
+            Some(v) => v,
+            None => return Err($err),
+        }
+    };
+}
