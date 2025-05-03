@@ -65,7 +65,7 @@ macro_rules! try_res {
     ($value: expr => |$e: ident| $err: expr) => {
         match $value {
             Ok(v) => v,
-            Err($e) => return Err($err)
+            Err($e) => return Err($err),
         }
     };
 }
@@ -76,7 +76,7 @@ macro_rules! try_opt {
     ($value: expr => $err: expr) => {
         match $value {
             Some(v) => v,
-            None => return Err($err)
+            None => return Err($err),
         }
     };
 }
