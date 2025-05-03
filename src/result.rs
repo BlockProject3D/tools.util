@@ -59,6 +59,8 @@ impl<T, E: Error> ResultExt<T, E> for Result<T, E> {
     }
 }
 
+/// Generates a match block which returns errors to circumvent rust borrow checker defects.
+#[macro_export]
 macro_rules! try_res {
     ($value: expr => |$e: ident| $err: expr) => {
         match $value {
@@ -68,6 +70,8 @@ macro_rules! try_res {
     };
 }
 
+/// Generates a match block which returns errors to circumvent rust borrow checker defects.
+#[macro_export]
 macro_rules! try_opt {
     ($value: expr => $err: expr) => {
         match $value {
