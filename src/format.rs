@@ -45,11 +45,11 @@ impl<'a> MemBufStr<'a> {
     /// It is UB to construct a [MemBufStr] if `len` is not a valid position in the buffer `buffer`.
     /// It is also UB to construct a [MemBufStr] from a `buffer` which does not contain only UTF-8
     /// bytes. If `len` points to uninitialized memory in `buffer` constructing [MemBufStr] is UB.
-    pub unsafe fn wrap_uninit(len: &'a mut usize, buffer: &'a mut [MaybeUninit<u8>]) -> MemBufStr<'a> {
-        MemBufStr {
-            buffer,
-            len
-        }
+    pub unsafe fn wrap_uninit(
+        len: &'a mut usize,
+        buffer: &'a mut [MaybeUninit<u8>],
+    ) -> MemBufStr<'a> {
+        MemBufStr { buffer, len }
     }
 
     /// Wraps a memory buffer with its length in a new string buffer.
@@ -62,7 +62,7 @@ impl<'a> MemBufStr<'a> {
     pub unsafe fn wrap(len: &'a mut usize, buffer: &'a mut [u8]) -> MemBufStr<'a> {
         MemBufStr {
             buffer: std::mem::transmute(buffer),
-            len
+            len,
         }
     }
 
