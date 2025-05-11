@@ -30,6 +30,89 @@
 
 use std::mem::MaybeUninit;
 
+/// A structure which acts similar to a [FixedBufStr] but borrows from a buffer instead of owning a
+/// stack allocation.
+pub struct MemBufStr<'a> {
+    len: &'a mut usize,
+    buffer: &'a mut [MaybeUninit<u8>],
+}
+
+impl<'a> MemBufStr<'a> {
+    /// Wraps a memory buffer with its length in a new string buffer.
+    ///
+    /// # Safety
+    ///
+    /// It is UB to construct a [MemBufStr] if `len` is not a valid position in the buffer `buffer`.
+    /// It is also UB to construct a [MemBufStr] from a `buffer` which does not contain only UTF-8
+    /// bytes. If `len` points to uninitialized memory in `buffer` constructing [MemBufStr] is UB.
+    pub unsafe fn wrap_uninit(
+        len: &'a mut usize,
+        buffer: &'a mut [MaybeUninit<u8>],
+    ) -> MemBufStr<'a> {
+        MemBufStr { buffer, len }
+    }
+
+    /// Wraps a memory buffer with its length in a new string buffer.
+    ///
+    /// # Safety
+    ///
+    /// It is UB to construct a [MemBufStr] if `len` is not a valid position in the buffer `buffer`.
+    /// It is also UB to construct a [MemBufStr] from a `buffer` which does not contain only UTF-8
+    /// bytes.
+    pub unsafe fn wrap(len: &'a mut usize, buffer: &'a mut [u8]) -> MemBufStr<'a> {
+        MemBufStr {
+            #[allow(clippy::missing_transmute_annotations)]
+            buffer: std::mem::transmute(buffer),
+            len,
+        }
+    }
+
+    /// Extracts the string from this buffer.
+    //type inference works so why should the code look awfully more complex?
+    #[allow(clippy::missing_transmute_annotations)]
+    pub fn str(&self) -> &str {
+        unsafe { std::str::from_utf8_unchecked(std::mem::transmute(&self.buffer[..*self.len])) }
+    }
+
+    /// Appends a raw byte buffer at the end of this string buffer.
+    ///
+    /// Returns the number of bytes written.
+    ///
+    /// # Arguments
+    ///
+    /// * `buf`: the raw byte buffer to append.
+    ///
+    /// returns: usize
+    ///
+    /// # Safety
+    ///
+    /// * [MemBufStr](MemBufStr) contains only valid UTF-8 strings so buf must contain only valid UTF-8
+    ///   bytes.
+    /// * If buf contains invalid UTF-8 bytes, further operations on the log message buffer may
+    ///   result in UB.
+    //type inference works so why should the code look awfully more complex?
+    #[allow(clippy::missing_transmute_annotations)]
+    pub unsafe fn write(&mut self, buf: &[u8]) -> usize {
+        let len = utf8_max(buf, self.buffer.len() - *self.len);
+        unsafe {
+            std::ptr::copy_nonoverlapping(
+                buf.as_ptr(),
+                std::mem::transmute(self.buffer.as_mut_ptr().add(*self.len)),
+                len,
+            );
+        }
+        *self.len += len;
+        len
+    }
+}
+
+impl std::fmt::Write for MemBufStr<'_> {
+    fn write_str(&mut self, value: &str) -> std::fmt::Result {
+        unsafe { self.write(value.as_bytes()) };
+        Ok(())
+    }
+}
+
 /// Fixed length string buffer.
 #[derive(Clone, Debug)]
 pub struct FixedBufStr<const N: usize> {
@@ -192,12 +275,25 @@ impl<W: std::fmt::Write> std::io::Write for IoToFmt<W> {
 
 #[cfg(test)]
 mod tests {
-    use crate::format::FixedBufStr;
+    use crate::format::{FixedBufStr, MemBufStr};
     use std::fmt::Write;
+    use std::mem::MaybeUninit;
 
     #[test]
     fn basic() {
         let mut msg: FixedBufStr<64> = FixedBufStr::new();
+        let _ = write!(msg, "this");
+        let _ = write!(msg, " is");
+        let _ = write!(msg, " a");
+        let _ = write!(msg, " test");
+        assert_eq!(msg.str(), "this is a test");
+    }
+
+    #[test]
+    fn basic_mem() {
+        let mut buf: [MaybeUninit<u8>; 64] = unsafe { MaybeUninit::uninit().assume_init() };
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap_uninit(&mut len, &mut buf) };
         let _ = write!(msg, "this");
         let _ = write!(msg, " is");
         let _ = write!(msg, " a");
@@ -217,8 +313,31 @@ mod tests {
     }
 
     #[test]
+    fn truncate_ascii_mem() {
+        let mut buf = [0; 4];
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap(&mut len, &mut buf) };
+        let _ = write!(msg, "this");
+        let _ = write!(msg, " is");
+        let _ = write!(msg, " a");
+        let _ = write!(msg, " test");
+        assert_eq!(msg.str().len(), 4);
+        assert_eq!(msg.str(), "this");
+    }
+
+    #[test]
     fn truncate_utf8_exact() {
         let mut msg: FixedBufStr<3> = FixedBufStr::new();
+        let _ = write!(msg, "我");
+        assert_eq!(msg.str().len(), 3);
+        assert_eq!(msg.str(), "我");
+    }
+
+    #[test]
+    fn truncate_utf8_exact_mem() {
+        let mut buf = [0; 3];
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap(&mut len, &mut buf) };
         let _ = write!(msg, "我");
         assert_eq!(msg.str().len(), 3);
         assert_eq!(msg.str(), "我");
@@ -233,6 +352,16 @@ mod tests {
     }
 
     #[test]
+    fn truncate_utf8_exact2_mem() {
+        let mut buf = [0; 6];
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap(&mut len, &mut buf) };
+        let _ = write!(msg, "我是");
+        assert_eq!(msg.str().len(), 6);
+        assert_eq!(msg.str(), "我是");
+    }
+
+    #[test]
     fn truncate_utf8_exact3() {
         let mut msg: FixedBufStr<6> = FixedBufStr::new();
         let _ = write!(msg, "我abcd");
@@ -241,8 +370,28 @@ mod tests {
     }
 
     #[test]
+    fn truncate_utf8_exact3_mem() {
+        let mut buf = [0; 6];
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap(&mut len, &mut buf) };
+        let _ = write!(msg, "我abcd");
+        assert_eq!(msg.str().len(), 6);
+        assert_eq!(msg.str(), "我abc");
+    }
+
+    #[test]
     fn truncate_utf8() {
         let mut msg: FixedBufStr<4> = FixedBufStr::new();
+        let _ = write!(msg, "我是");
+        assert_eq!(msg.str().len(), 3);
+        assert_eq!(msg.str(), "我");
+    }
+
+    #[test]
+    fn truncate_utf8_mem() {
+        let mut buf = [0; 4];
+        let mut len = 0;
+        let mut msg = unsafe { MemBufStr::wrap(&mut len, &mut buf) };
         let _ = write!(msg, "我是");
         assert_eq!(msg.str().len(), 3);
         assert_eq!(msg.str(), "我");
