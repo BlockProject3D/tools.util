@@ -61,6 +61,7 @@ impl<'a> MemBufStr<'a> {
     /// bytes.
     pub unsafe fn wrap(len: &'a mut usize, buffer: &'a mut [u8]) -> MemBufStr<'a> {
         MemBufStr {
+            #[allow(clippy::missing_transmute_annotations)]
             buffer: std::mem::transmute(buffer),
             len,
         }
@@ -105,7 +106,7 @@ impl<'a> MemBufStr<'a> {
     }
 }
 
-impl<'a> std::fmt::Write for MemBufStr<'a> {
+impl std::fmt::Write for MemBufStr<'_> {
     fn write_str(&mut self, value: &str) -> std::fmt::Result {
         unsafe { self.write(value.as_bytes()) };
         Ok(())

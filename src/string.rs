@@ -96,7 +96,6 @@ fn utf8_min(buf: &[u8], start: usize) -> &[u8] {
     if unsafe { buf.get_unchecked(start) } & 0x80 == 0x00 {
         &buf[start..]
     } else {
-        let start = start;
         let mut i = start;
         unsafe {
             while i < buf.len() && buf.get_unchecked(i) & 0xC0 == 0x80 {
