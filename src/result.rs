@@ -80,3 +80,20 @@ macro_rules! try_opt {
         }
     };
 }
+
+/// Generates a match block which returns an exist status code on error.
+///
+/// This is to be used when some cleanup code below must be called before [exit](std::process:exit)
+/// is called.
+#[macro_export]
+macro_rules! expect_return {
+    ($expr: expr => ($msg: literal, $code: literal)) => {
+        match $expr {
+            Ok(v) => v,
+            Err(e) => {
+                eprintln!("{}: {}", $msg, e);
+                return $code;
+            }
+        }
+    };
+}
