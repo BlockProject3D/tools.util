@@ -225,6 +225,11 @@ impl<const N: usize> FixedBufStr<N> {
         self.len += len;
         len
     }
+
+    /// Clears this buffer.
+    pub fn clear(&mut self) {
+        self.len = 0;
+    }
 }
 
 impl<const N: usize> std::fmt::Write for FixedBufStr<N> {
