@@ -57,3 +57,6 @@ pub mod index_map;
 
 #[cfg(feature = "string")]
 pub mod string;
+
+#[cfg(feature = "mem")]
+pub mod mem;

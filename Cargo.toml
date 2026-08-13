@@ -1,6 +1,6 @@
 [package]
 name = "bp3d-util"
-version = "2.4.0"
+version = "2.5.0"
 authors = ["Yuri Edward <yuri6037@outlook.com>"]
 edition = "2021"
 description = "OS independant Rust language utilities."
@@ -25,6 +25,7 @@ path = ["extension"]
 extension = []
 index-map = []
 string = ["extension"]
+mem = []
 
 [package.metadata.docs.rs]
 all-features = true
