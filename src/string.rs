@@ -51,21 +51,21 @@ extension! {
         fn sub_nearest(&self, range: impl Range) -> &str;
 
         /// A string capitalize function which operates on UTF-8 strings.
-        fn capitalise(&self) -> Cow<str>;
+        fn capitalise(&self) -> Cow<'_, str>;
 
         /// A string decapitalize function which operates on UTF-8 strings. This essentially does
         /// the inverse of the [capitalise](StrTools::capitalise) function.
-        fn decapitalise(&self) -> Cow<str>;
+        fn decapitalise(&self) -> Cow<'_, str>;
     }
 
     /// The main string tools operating on raw byte slices.
     pub extension BufTools: [u8] {
         /// A string capitalize function which operates on ASCII only strings.
-        fn capitalise_ascii(&self) -> Cow<[u8]>;
+        fn capitalise_ascii(&self) -> Cow<'_, [u8]>;
 
         /// A string decapitalize function which operates on ASCII only strings. This essentially does
         /// the inverse of the [capitalise](BufTools::capitalise_ascii) function.
-        fn decapitalise_ascii(&self) -> Cow<[u8]>;
+        fn decapitalise_ascii(&self) -> Cow<'_, [u8]>;
     }
 }
 
@@ -139,7 +139,7 @@ impl StrTools for str {
         range.sub_nearest(self)
     }
 
-    fn capitalise(&self) -> Cow<str> {
+    fn capitalise(&self) -> Cow<'_, str> {
         if self.is_empty() {
             return self.into();
         }
@@ -151,7 +151,7 @@ impl StrTools for str {
         }
     }
 
-    fn decapitalise(&self) -> Cow<str> {
+    fn decapitalise(&self) -> Cow<'_, str> {
         if self.is_empty() {
             return self.into();
         }
@@ -165,7 +165,7 @@ impl StrTools for str {
 }
 
 impl BufTools for [u8] {
-    fn capitalise_ascii(&self) -> Cow<[u8]> {
+    fn capitalise_ascii(&self) -> Cow<'_, [u8]> {
         if self.is_empty() {
             return self.into();
         }
@@ -178,7 +178,7 @@ impl BufTools for [u8] {
         }
     }
 
-    fn decapitalise_ascii(&self) -> Cow<[u8]> {
+    fn decapitalise_ascii(&self) -> Cow<'_, [u8]> {
         if self.is_empty() {
             return self.into();
         }

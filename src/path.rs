@@ -41,12 +41,12 @@ extension! {
     pub extension PathExt: Path {
         /// Ensures the given extension is present on a [Path](Path). Reallocates a new
         /// [PathBuf](std::path::PathBuf) if no extension is present or that the extension is incorrect.
-        fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<Path>;
+        fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<'_, Path>;
     }
 }
 
 impl PathExt for Path {
-    fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<Path> {
+    fn ensure_extension<S: AsRef<OsStr>>(&self, extension: S) -> Cow<'_, Path> {
         if let Some(ext) = self.extension() {
             if ext == extension.as_ref() {
                 self.into()
